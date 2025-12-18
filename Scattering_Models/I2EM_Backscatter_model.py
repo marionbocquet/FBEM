@@ -19,7 +19,26 @@ from numpy import sin, cos, tan, sqrt, exp, log10
 from math import factorial
 from scipy import special
 
+def py_length(x):
+    """
+    MATLAB-like length function in Python.
+    - Scalars return 1
+    - Lists, tuples, numpy arrays return their length along the first axis
+    """
 
+    # Convertir les scalaires numpy ou python en array 1D pour len
+    if isinstance(x, (int, float, complex, np.generic)):
+        return 1
+    elif isinstance(x, (list, tuple)):
+        return len(x)
+    elif isinstance(x, np.ndarray):
+        # pour les scalaires numpy shape=() -> 1
+        if x.shape == ():
+            return 1
+        return x.shape[0]
+    else:
+        # fallback pour tout le reste
+        return 1
 
 def I2EM_Backscatter_model(fr, sig, L, thi, er, sp, xx):
 
@@ -356,16 +375,16 @@ def IEMX_model(fr, sig, L, theta_d, er, sp, xx, auto):
 
 
     # Need to be phi first in python (y, and x afterward)
-    """svh, err = dblquad(lambda phi, r: xpol_integralfunc(r, phi, sp, xx, ks2, cs, s, kl2, L, er, rss, rvh, n_spec), 
+    svh, err = dblquad(lambda phi, r: xpol_integralfunc(r, phi, sp, xx, ks2, cs, s, kl2, L, er, rss, rvh, n_spec), 
                        0.1, 1, # bound for r 
                        lambda r: 0, # lower bound for phi 
                        lambda r: np.pi # higher bound for phi
-                       )"""
-    svh, err = dblquad(xpol_integralfunc_wrapped, 
+                       )
+    """svh, err = dblquad(xpol_integralfunc_wrapped, 
                        0.1, 1, # bound for r   
                        lambda r: 0.0, lambda r: np.pi,    
                        args=(sp, xx, ks2, cs, s, kl2, L, er, rss, rvh, n_spec))
-    
+    """
     sigvh = 10 * log10(svh * Shdw)
 
     return sigvh
@@ -495,7 +514,7 @@ def xpol_integralfunc(r, phi, sp, xx, ks2, cs,s, kl2, L, er, rss, rvh, n_spec):
     cs2 = cs**2
 
     r2 = r**2
-    nr = len(r)
+    nr = py_length(r)
 
     sf = sin(phi)
     csf = cos(phi)
@@ -544,39 +563,39 @@ def xpol_integralfunc(r, phi, sp, xx, ks2, cs,s, kl2, L, er, rss, rvh, n_spec):
 
     return y 
 
-def spectrm1(sp, xx, kl2, L, rx, ry, s, np, nr):
+def spectrm1(sp, xx, kl2, L, rx, ry, s, npp, nr):
 
-    wn = np.zeros(np, nr)
+    wn = np.zeros((npp, nr))
 
     if sp == 1:  # exponential 
-        for n in range(1, np + 1):       
+        for n in range(1, npp + 1):       
             wn[n-1, :] = n * kl2 /(n**2 + kl2 *((rx - s)**2 + ry**2))**1.5
 
     if sp == 2:  #  gaussian
-        for n in range(1, np + 1):
+        for n in range(1, npp + 1):
             wn[n-1, :] = 0.5 * kl2 /n * exp(-kl2*((rx - s)**2 + ry**2)/(4 * n)) ;
 
     if sp== 3: # x-power
-        for n in range(1, np + 1):
+        for n in range(1, npp + 1):
             wn[n-1, :] = (kl2 /(2**(xx * n - 1) * special.gamma(xx * n)) 
                           * (((rx - s)**2 + ry**2)*L)**(xx * n - 1) 
                           * special.kv(-xx * n + 1, L * ((rx - s)**2 + ry**2)))
     return wn
 
-def spectrm2(sp, xx, kl2, L, rx, ry, s, np, nr):
+def spectrm2(sp, xx, kl2, L, rx, ry, s, npp, nr):
 
-    wm = np.zeros(np, nr)
+    wm = np.zeros((npp, nr))
 
     if sp == 1: # exponential
-        for n in range(1, np + 1):
+        for n in range(1, npp + 1):
             wm[n-1, :] = n * kl2 /(n**2 + kl2 * ((rx + s)**2+ry**2))**1.5
 
     if sp == 2:  #  gaussian
-        for n in range(1, np + 1):
+        for n in range(1, npp + 1):
             wm[n-1, :] = 0.5 * kl2/ n * exp(-kl2 * ((rx + s)**2 + ry**2)/(4 * n))
 
     if sp== 3: # x-power
-        for n in range(1, np + 1):
+        for n in range(1, npp + 1):
             wm[n-1, :] = (kl2 / (2**(xx * n-1) * special.gamma(xx * n)) 
                           * (((rx + s)**2 + ry**2) * L)**(xx * n-1) 
                           * special.kv(-xx * n + 1, L * ((rx + s)**2 + ry**2)))

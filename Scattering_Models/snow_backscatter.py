@@ -5,8 +5,9 @@ from scipy.interpolate import CubicSpline
 from Scattering_Models.RelDielConst_DrySnow import RelDielConst_DrySnow
 from Scattering_Models.I2EM_Backscatter_model import I2EM_Backscatter_model 
 from Scattering_Models.MieExtinc_DrySnow import MieExtinc_DrySnow
+from Scattering_Models.I2EM_Backscatter_model import py_length
 
-def snow_backscatter(Lambda,sigma_s,l_s,T_s,rho_s,r_s,h_s,beta_c):
+def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
     """
      Models the backscattering coefficients from the snow-ice interface and
@@ -97,21 +98,25 @@ def snow_backscatter(Lambda,sigma_s,l_s,T_s,rho_s,r_s,h_s,beta_c):
     # Calculate coherent reflected backscattering coefficient
     # sigma_0_HH_coh = ((gamma_H.*omega)/beta_c**2)*exp(-4*k0**2*sigma_s**2).*exp(-theta.**2/beta_c**2) # coherent component of backscattering coefficient
     # sigma_0_VV_coh = ((gamma_V.*omega)/beta_c**2)*exp(-4*k0**2*sigma_s**2).*exp(-theta.**2/beta_c**2) # coherent component of backscattering coefficient
-    sigma_0_HH_coh = 4 * ((gamma_H * 1)/beta_c**2)*exp(-4*k0**2*sigma_s**2)*exp(-4*theta**2/beta_c**2) # equation 6 of Fung and Eom 1983
-    sigma_0_VV_coh = 4 * ((gamma_V * 1)/beta_c**2)*exp(-4*k0**2*sigma_s**2)*exp(-4*theta**2/beta_c**2)
+    
+    # Not commented in last version but doesn't work ...TODO
+    #sigma_0_HH_coh = 4 * ((gamma_H * 1)/beta_c**2)*exp(-4*k0**2*sigma_s**2)*exp(-4*theta**2/beta_c**2) # equation 6 of Fung and Eom 1983
+    #sigma_0_VV_coh = 4 * ((gamma_V * 1)/beta_c**2)*exp(-4*k0**2*sigma_s**2)*exp(-4*theta**2/beta_c**2)
 
     # Calculate incoherent surface backscattering coefficient
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_s_surf = np.zeros((len(theta),1))
     sigma_0_VV_s_surf = np.zeros((len(theta),1))
     for i in range(1,len(theta+1)):
-        sigma_0_VV_s_surf[i-1], sigma_0_HH_s_surf[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta(i)*180/pi, eps_ds, 1, [])[0:2]
+        sigma_0_VV_s_surf[i-1], sigma_0_HH_s_surf[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta[i-1]*180/pi, eps_ds, 1, [])[0:2]
     
 
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power
-    sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf.T/10)) # H-pol, dB
-    sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf.T/10)) # V-pol, dB
+
+    # TODO In previous version !!! -> Check what it involves no to have it ...
+    # sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf.T/10)) # H-pol, dB
+    # sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf.T/10)) # V-pol, dB
 
     # Assuming no coherent reflected power
     sigma_0_HH_s_surf[np.isinf(sigma_0_HH_s_surf)] = np.nan
@@ -147,8 +152,9 @@ def snow_backscatter(Lambda,sigma_s,l_s,T_s,rho_s,r_s,h_s,beta_c):
 
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
-    sigma_0_snow_vol = CubicSpline(theta,(sigma_0_HH_s_vol + sigma_0_VV_s_vol)/2)
-
-
+    if abs(sigma_0_HH_s_vol.mean())==np.inf:
+        sigma_0_snow_vol = np.zeros(py_length(sigma_0_HH_s_vol))
+    else:
+        sigma_0_snow_vol = CubicSpline(theta, (sigma_0_HH_s_vol + sigma_0_VV_s_vol)/2)
 
     return theta, sigma_0_snow_surf, sigma_0_snow_vol, kappa_e, tau_snow, c_s, epsr_ds

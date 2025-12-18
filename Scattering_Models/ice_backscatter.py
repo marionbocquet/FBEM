@@ -75,10 +75,10 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     ## Dielectric Properties
 
     # Sea ice dielectrics
-    [epsr_i,epsi_i] = RelDielConst_PureIce(T_si,f_c*1e-9) # permittvity of pure ice
-    [epsr_br,epsi_br] = RelDielConst_Brine(T_si,f_c*1e-9,S_br) # permittivity of brine inclusions
+    epsr_i, epsi_i = RelDielConst_PureIce(T_si,f_c*1e-9) # permittvity of pure ice
+    epsr_br,epsi_br = RelDielConst_Brine(T_si,f_c*1e-9,S_br) # permittivity of brine inclusions
 
-    [eps_si] = TVBmodel_HeterogeneousMix(epsr_br + 1j * epsi_br , epsr_i + 1j * epsi_i, 2, V_b) # Mixture model with spherical inclusions
+    eps_si = TVBmodel_HeterogeneousMix(epsr_br + 1j * epsi_br , epsr_i + 1j * epsi_i, 2, V_b) # Mixture model with spherical inclusions
 
     # Fresnel reflection & transmission coefficients
     epsr_a = 1 # relative permittivity of air
@@ -122,8 +122,8 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
 
     # Calculate incoherent surface backscattering coefficient
     # Run single-scattering IEM for relevant range of facet incidence angles
-    sigma_0_HH_si_surf = np.zeros(len(theta), 1)
-    sigma_0_VV_si_surf = np.zeros(len(theta), 1)
+    sigma_0_HH_si_surf = np.zeros(len(theta))
+    sigma_0_VV_si_surf = np.zeros(len(theta))
     for i in range(1, len(theta)+1):
         sigma_0_VV_si_surf[i-1], sigma_0_HH_si_surf[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_si, l_si, theta(i)*180/pi, eps_si, 1, [])[0:2]
     

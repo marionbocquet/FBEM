@@ -231,23 +231,35 @@ epsilon_b = Lambda/(2*N_b*v*(1/prf)) # angular resolution of beams from full loo
 
 # Identify vector variables
 # all parameters controlling scattering signatures
+# Récupérer toutes les variables du workspace
 PARAMETERS = whos_py(globals())
-idS = [
-    print(p) for i, p in enumerate(PARAMETERS)
-    if isinstance(p['type'], type(np.ndarray)) and len(p['size']) > 1 and p['size'][1] > 1]
-idG = [i for i, g in enumerate(GP) if g['size'][1] > 1]
 
+# idS : indices des "tableaux" avec plus d’une colonne (comme MATLAB)
+idS = [
+    i for i, p in enumerate(PARAMETERS)
+    if isinstance(p['type'], type(np.ndarray)) and len(p['size']) > 1 and p['size'][1] > 1
+]
+
+# idG : indices dans GP avec plus d’une colonne
+idG = [i for i, g in enumerate(GP) if len(g['size']) > 1 and g['size'][1] > 1]
+
+# Correspondance des noms
 nmG = [0] * max(1, len(idG))
-for g_idx in idG:
-    nmG = [
+for idx, g_idx in enumerate(idG):
+    matches = [
         i for i, p in enumerate(PARAMETERS)
         if p['name'] == GP[g_idx]['name']
     ]
+    if matches:
+        nmG[idx] = matches[0]
 
+# match : comparaison avec idS
 match = [0, 0, 0]
-for i in range(len(idS)):
-    match[i] = (nmG == idS)
+for i, nm in enumerate(nmG):
+    if i < len(idS):
+        match[i] = int(nm == idS[i])
 
+# Création des vecteurs vec1, vec2, vec3 comme en MATLAB
 vec1 = vec2 = vec3 = 1
 if len(idS) >= 1:
     vec1 = globals()[PARAMETERS[idS[0]]['name']]
@@ -256,6 +268,12 @@ if len(idS) >= 2:
 if len(idS) >= 3:
     vec3 = globals()[PARAMETERS[idS[2]]['name']]
 
+if not isinstance(vec1, (list, np.ndarray)):
+    vec1 = [vec1]
+if not isinstance(vec2, (list, np.ndarray)):
+    vec2 = [vec2]
+if not isinstance(vec3, (list, np.ndarray)):
+    vec3 = [vec3]
 
 # Loop model over vector variables
 
@@ -284,7 +302,7 @@ for i in range(len(vec1)):
             if counter < 1 or len(idG) > 0:
 
                 beta_c = epsilon_b  # tuning parameter
-
+                print('--- Snow Backscatter computation ---')
                 (
                     theta,
                     sigma_0_snow_surf,
@@ -296,7 +314,7 @@ for i in range(len(vec1)):
                 ) = snow_backscatter(
                     Lambda, sigma_s, l_s, T_s, rho_s, r_s, h_s, beta_c
                 )
-
+                print('--- Ice Backscatter computation ---')
                 (
                     _,
                     sigma_0_ice_surf,
@@ -304,14 +322,14 @@ for i in range(len(vec1)):
                 ) = ice_backscatter(
                     Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds
                 )
-
+                print('--- Lead Backscatter computation ---')
                 (
                     _,
                     sigma_0_lead_surf
                 ) = lead_backscatter(
                     Lambda, sigma_sw, T_sw, S_sw, beta_c
                 )
-
+                print('--- Pond Backscatter computation ---')
                 (
                     _,
                     sigma_0_mp_surf
@@ -331,6 +349,7 @@ for i in range(len(vec1)):
 
             for l in range(itN):
 
+                print('--- Synthetic topography ---')
                 # --- Synthetic topography ---
                 PosT, surface_type = synthetic_topo_shell(
                     op_mode, topo_type, pitch, roll,
@@ -338,6 +357,7 @@ for i in range(len(vec1)):
                     dx, L_w, L_h, D_off, f_p
                 )
 
+                print('--- Facet Echo Model ---')
                 # --- Facet Echo Model ---
                 (
                     P_t_full[:, :, l],

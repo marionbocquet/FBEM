@@ -14,7 +14,7 @@ from scipy.interpolate import CubicSpline
 from Scattering_Models.RelDielConst_PureIce import RelDielConst_PureIce
 from scipy.constants import pi
 import numpy as np
-
+from Scattering_Models.I2EM_Backscatter_model import py_length
 def MieExtinc_DrySnow(rho_s, ri, f, t):
     
     """
@@ -94,16 +94,16 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
 
     """
 
-    epsb1 = np.np.real(epsb)
+    epsb1 = np.real(epsb)
 
-    np = sqrt(epsp) # index of refraction of spherical particle
+    npp = sqrt(epsp) # index of refraction of spherical particle
     nb = sqrt(epsb) # index of refraction of background medium
 
-    n = np / nb # relative index of refraction
+    n = npp / nb # relative index of refraction
     #  n = np /sqrt(epsb1)
 
 
-    chi = 20/3 *pi * r * f * sqrt(epsb1) # normalized circumference in background
+    chi = 20/3 * pi * r * f * sqrt(epsb1) # normalized circumference in background
 
     #--- Calculate Rayleigh Approximation solution
 
@@ -124,8 +124,8 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #Calculation of Es
     l = 1
     first = True
-    runSum = np.linspace(0, 0, f.size)
-    oldSum = np.linspace(0, 0, f.size)
+    runSum = np.linspace(0, 0, py_length(f))
+    oldSum = np.linspace(0, 0, py_length(f))
 
     #Values of W0 and W-1
     W_1 = sin(chi) + 1j * cos(chi)
@@ -137,7 +137,7 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #A_1=    (sin(np.real(n)*chi)*cos(np.real(n)*chi)+j*sinh(imag(n)*chi)*cosh(imag(n)*chi))...
     #        /(sin(np.real(n)*chi)**2 + sinh(imag(n)*chi)**2)
 
-    while first or (not endSum(oldSum, runSum, chi.size)):
+    while first or (not endSum(oldSum, runSum, py_length(chi))):
         W=(2*l-1)/chi * W_1 - W_2
 
         A = -l/(n*chi) + (l/(n*chi)-A_1)**-1
@@ -146,7 +146,7 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
         b = ((n*A + l/chi)*np.real(W)-np.real(W_1)) / ((n*A+l/chi)*W-W_1)
         
         sumTerm = (2*l + 1)*(abs(a)**2+abs(b)**2)
-        oldSum = runSum
+        oldSum = np.copy(runSum)
         runSum = runSum + sumTerm
         
         #Increment Index varible
@@ -167,8 +167,8 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #Calculation of Ee
     l=1
     first = True
-    runSum = np.linspace(0,0,f.size)
-    oldSum = np.linspace(0,0,f.size)
+    runSum = np.linspace(0, 0, py_length(f))
+    oldSum = np.linspace(0, 0, py_length(f))
 
     #Values of W0 and W-1
     W_1 = sin(chi)+1j*cos(chi)
@@ -180,7 +180,7 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #A_1 =   (sin(np.real(n)*chi)*cos(np.real(n)*chi)+j*sinh(imag(n)*chi)*cosh(imag(n)*chi))...
     #       /(sin(np.real(n)*chi)**2 + sinh(imag(n)*chi)**2)
 
-    while first or (not endSum(oldSum, runSum, chi.size)):
+    while first or (not endSum(oldSum, runSum, py_length(chi))):
         W=(2*l-1)/chi * W_1 - W_2
 
         A = -l/(n*chi) + (l/(n*chi)-A_1)**-1
@@ -210,8 +210,8 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #Calculation of Eb
     l=1
     first = True
-    runSum=np.linspace(0,0, f.size)
-    oldSum=np.linspace(0,0, f.size)
+    runSum=np.linspace(0,0, py_length(f))
+    oldSum=np.linspace(0,0, py_length(f))
 
     #Values of W0 and W-1
     W_1 = sin(chi)+1j*cos(chi)
@@ -220,7 +220,7 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
     #Value of A0
     A_1 = 1/np.tan(n*chi)
             
-    while first or (not endSum(oldSum, runSum, chi.size)):
+    while first or (not endSum(oldSum, runSum, py_length(chi))):
         W=(2*l-1)/chi * W_1 - W_2
 
         A = -l/(n*chi) + (l/(n*chi)-A_1)**-1
@@ -228,11 +228,11 @@ def Mie_Rayleigh_ScatteringOfSpheres(r, f, epsp, epsb):
         a = ((A/n + l/chi)*np.real(W)-np.real(W_1)) / ((A/n+l/chi)*W-W_1)
         b = ((n*A + l/chi)*np.real(W)-np.real(W_1)) / ((n*A+l/chi)*W-W_1)
         
-        sumTerm = (-1)^l * (2*l + 1) *(a-b)
+        sumTerm = (-1)**l * (2*l + 1) *(a-b)
         oldSum = runSum
         runSum = runSum + sumTerm
         
-        #Increment Index varible
+        #Increment Index variable
         l=l+1
         
         #Increment W terms
@@ -258,8 +258,8 @@ def endSum(A0, A1, num):
     stop = True
     pDiff = abs((A1 - A0)/A0) * 100
     
-    for t in range(1, num+1):
-        if((pDiff[t-1]>=0.001) or (A0[t] ==0)):
+    for t in range(0, num):
+        if((pDiff[t]>=0.001) or (A0[t] ==0)):
             stop = False
 
     return stop

@@ -89,8 +89,8 @@ def pond_backscatter(Lambda, T_fw, beta_c, u_a):
 
     # Calculate incoherent surface backscattering coefficient
     # Run single-scattering IEM for relevant range of facet incidence angles
-    sigma_0_HH_inc = np.zeros((len(theta),1))
-    sigma_0_VV_inc = np.zeros((len(theta),1))
+    sigma_0_HH_inc = np.zeros((len(theta)))
+    sigma_0_VV_inc = np.zeros((len(theta)))
     for i in range(1, len(theta)+1):
         sigma_0_VV_inc[i-1], sigma_0_HH_inc[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_mp, l_mp, theta(i)*180/pi, eps_fw, 1, [])[0:2]
     
