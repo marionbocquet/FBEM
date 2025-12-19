@@ -342,9 +342,9 @@ for i in range(len(vec1)):
             # --- Initialisation ---
             itN = 1
 
-            P_t_full = np.zeros((len(t), N_b, itN))
+            P_t_full = np.zeros((N_b, len(t), itN))
             P_t_ml = np.zeros((len(t), itN))
-            P_t_full_comp = np.zeros((len(t), N_b, 4, itN))
+            P_t_full_comp = np.zeros((N_b, len(t), 4, itN))
             P_t_ml_comp = np.zeros((len(t), 4, itN))
 
             for l in range(itN):
@@ -385,7 +385,7 @@ for i in range(len(vec1)):
                     f"Simulation {sim_id}/{len(vec1)*len(vec2)*len(vec3)}"
                 )
 
-            # --- Moyennes (nanmean MATLAB) ---
+            # --- Mean  ---
             P_t_full_range[i][j][k] = np.nanmean(P_t_full, axis=2)
             P_t_ml_range[i][j][k] = np.nanmean(P_t_ml, axis=1)
             P_t_full_comp_range[i][j][k] = np.nanmean(P_t_full_comp, axis=3)
@@ -393,7 +393,7 @@ for i in range(len(vec1)):
 
             # --- Optional plotting ---
             if (topo_plot or echo_plot) > 0:
-                Plotting(
+                plotting(
                     topo_plot, echo_plot,
                     PosT, t,
                     P_t_ml_range[i][j][k],

@@ -90,7 +90,7 @@ def plotting(topo_plot, echo_plot,
         # MATLAB uses 1:4:N_b; Python 0-based so use indices: 0, 4, 8, ...
         idx = np.arange(0, N_b, 4)
         for i in idx:
-            ax2.plot(t_ns, P_t_full[:, i], linewidth=1, label=f'{i+1}')  # label with MATLAB-like 1-based index
+            ax2.plot(t_ns, P_t_full[i, :], linewidth=1, label=f'{i+1}')  # label with MATLAB-like 1-based index
         ax2.set_xlim([-20, 80])
         ax2.grid(True)
         ax2.set_title('Single-look power echoes')
