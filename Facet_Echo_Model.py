@@ -242,8 +242,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
             mu_t[idx_ice] = ((10.0 ** (sigma_0_ice_surf(theta_pr[idx_ice]) / 10.0)) * 
                             (tau_snow(theta_pr[idx_ice]) ** 2) *   
                             np.exp(-kappa_e * h_s / 2.0))   
-        mu_t_si_tracer = P_t * mu_t      
-        
+        mu_t_si_tracer = P_t * mu_t[:, np.newaxis]
         # --- Eau libre (leads / melt ponds) cohérente ---        
         
         idx_lead = (SURFACE_TYPE == 0)       

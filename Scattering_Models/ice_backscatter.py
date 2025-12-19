@@ -11,6 +11,21 @@ from Scattering_Models.RelDielConst_Brine import RelDielConst_Brine
 from Scattering_Models.RelDielConst_PureIce import RelDielConst_PureIce
 from Scattering_Models.TVBmodel_HeterogeneousMix import TVBmodel_HeterogeneousMix
 from tqdm import tqdm
+from joblib import Parallel, delayed
+
+
+def compute_sigma(theta_i, f_c, sigma_si, l_si, eps_si):
+    """Compute VV, HH, HV backscatter for a single angle theta_i in radians."""
+    sigma_vv, sigma_hh, sigma_hv = I2EM_Backscatter_model(
+        f_c*1e-9,       # frequency in GHz
+        sigma_si,       # rms height in cm
+        l_si,           # correlation length in cm
+        theta_i*180/np.pi,  # incidence angle in degrees
+        eps_si,         # complex dielectric constant
+        1,              # sp type
+        []              # xx coefficient
+    )
+    return sigma_vv, sigma_hh, sigma_hv
 
 def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     """
@@ -129,11 +144,25 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_si_surf = np.zeros(len(theta))
     sigma_0_VV_si_surf = np.zeros(len(theta))
+    sigma_0_HV_si_surf = np.zeros(len(theta))
 
-    print(f'{len(theta)} iterations')
+    """
     for i in tqdm(range(len(theta))):
         sigma_0_VV_si_surf[i], sigma_0_HH_si_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_si, l_si, theta[i]*180/pi, eps_si, 1, [])[0:2]
     
+    """
+
+    # Parallel computation using joblib
+    results = Parallel(n_jobs=-1)(
+        delayed(compute_sigma)(theta_i, f_c, sigma_si, l_si, eps_si)
+        for theta_i in tqdm(theta)
+        )
+
+    # Unpack results into output arrays
+    for i, (vv, hh, hv) in enumerate(results):
+        sigma_0_VV_si_surf[i] = vv
+        sigma_0_HH_si_surf[i] = hh
+        sigma_0_HV_si_surf[i] = hv
 
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power

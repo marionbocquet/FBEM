@@ -7,6 +7,20 @@ from Scattering_Models.I2EM_Backscatter_model import I2EM_Backscatter_model
 from Scattering_Models.MieExtinc_DrySnow import MieExtinc_DrySnow
 from Scattering_Models.I2EM_Backscatter_model import py_length
 from tqdm import tqdm
+from joblib import Parallel, delayed
+
+def compute_sigma(theta_i, f_c, sigma_s, l_s, eps_ds):
+    """Compute VV, HH, HV backscatter for a single angle theta_i in radians."""
+    sigma_vv, sigma_hh, sigma_hv = I2EM_Backscatter_model(
+        f_c*1e-9,           # frequency in GHz
+        sigma_s,           # rms height in cm
+        l_s,               # correlation length in cm
+        theta_i*180/np.pi,  # incidence angle in degrees
+        eps_ds,             # complex dielectric constant
+        1,                  # correlation type
+        []                  # additional coefficient
+    )
+    return sigma_vv, sigma_hh, sigma_hv
 
 def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
@@ -113,11 +127,23 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_s_surf = np.zeros((len(theta),1))
     sigma_0_VV_s_surf = np.zeros((len(theta),1))
-    print(f'{len(theta)} iterations')
+    sigma_0_HV_s_surf = np.zeros(len(theta))
 
-    for i in tqdm(range(len(theta))):
+    # Parallel execution across all angles
+
+    results = Parallel(n_jobs=-1)(
+        delayed(compute_sigma)(theta_i, f_c, sigma_s, l_s, eps_ds)
+        for theta_i in tqdm(theta)
+        )
+    # Fill output arrays with results
+    for i, (vv, hh, hv) in enumerate(results):
+        sigma_0_VV_s_surf[i] = vv
+        sigma_0_HH_s_surf[i] = hh
+        sigma_0_HV_s_surf[i] = hv
+
+    """for i in tqdm(range(len(theta))):
         sigma_0_VV_s_surf[i], sigma_0_HH_s_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta[i]*180/pi, eps_ds, 1, [])[0:2]
-    
+    """
 
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power
