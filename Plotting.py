@@ -66,7 +66,7 @@ def plotting(topo_plot, echo_plot,
         ax.set_zlabel('Z [m]')
 
         plt.tight_layout()
-        plt.pause(0.001)
+        #plt.pause(0.001)
         plt.savefig('test_1.png')
     # ---------------------------
     # Echo plots
@@ -136,5 +136,5 @@ def plotting(topo_plot, echo_plot,
         ax4.legend(labels, loc='upper right')
 
         plt.tight_layout()
-        plt.pause(0.001)
+        #plt.pause(0.001)
         plt.savefig('test_2.png')
