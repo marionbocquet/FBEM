@@ -282,7 +282,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         P_t_full[ii, :] = np.real(echo_t)        
     
     P_t_ml = np.nansum(P_t_full, axis=0) 
-    P_t_full_comp = sigma_0_tracer * P_t_full #[:, :, None]
+    P_t_full_comp = sigma_0_tracer * P_t_full[:, :, None]
     P_t_full_T = P_t_full.T
     P_t_full_comp_perm = np.transpose(P_t_full_comp, (1, 0, 2))
 
