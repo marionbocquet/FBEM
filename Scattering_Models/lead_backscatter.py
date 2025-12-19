@@ -40,12 +40,12 @@ def lead_backscatter(Lambda, sigma_sw, T_sw, S_sw, beta_c):
 
     c = 299792458 # speed of light, m/s
     f_c = c/Lambda # radar frequency, Hz
-    k = (2*pi)/Lambda # wavenumber
+    k = (2 * pi)/Lambda # wavenumber
 
     ## Dielectric Properties
 
     # Seawater dielectrics
-    epsr_sw, epsi_sw = RelDielConst_SalineWater(T_sw,f_c * 1e-9, S_sw) # permittivity of seawater
+    epsr_sw, epsi_sw = RelDielConst_SalineWater(T_sw, f_c * 1e-9, S_sw) # permittivity of seawater
     eps_sw = epsr_sw + 1j * epsi_sw
 
     # Fresnel reflection coefficients
@@ -90,7 +90,8 @@ def lead_backscatter(Lambda, sigma_sw, T_sw, S_sw, beta_c):
 
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
-    sigma_0_lead_surf = CubicSpline(theta,(sigma_0_HH + sigma_0_VV)/2)
+    y_safe = np.nan_to_num((sigma_0_HH + sigma_0_VV)/2, nan=0.0, posinf=1e10, neginf=-1e10)
+    sigma_0_lead_surf = CubicSpline(theta, y_safe)
 
     warnings.filterwarnings('default') 
 

@@ -75,6 +75,7 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     ## Dielectric Properties
 
     # Sea ice dielectrics
+    print('---- Sea ice dielectrics ----')
     epsr_i, epsi_i = RelDielConst_PureIce(T_si,f_c*1e-9) # permittvity of pure ice
     epsr_br,epsi_br = RelDielConst_Brine(T_si,f_c*1e-9,S_br) # permittivity of brine inclusions
 
@@ -82,6 +83,8 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
 
     # Fresnel reflection & transmission coefficients
     epsr_a = 1 # relative permittivity of air
+
+    print('---- Fresnel reflection & transmission coefficients ----')
 
     if h_s > 0:
         eta_0 = 376.73031346177 # intrinsic impedance of free space, ohms
@@ -107,6 +110,7 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     gamma_H = rho_H**2 # reflectivity (intensity)
     gamma_V = rho_V**2 # reflectivity (intensity)
 
+    print('---- Backscattering Coefficient of Snow-Ice Interface, sigma0 ----')
 
     ## Backscattering Coefficient of Snow-Ice Interface, sigma0
 
@@ -124,8 +128,8 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_si_surf = np.zeros(len(theta))
     sigma_0_VV_si_surf = np.zeros(len(theta))
-    for i in range(1, len(theta)+1):
-        sigma_0_VV_si_surf[i-1], sigma_0_HH_si_surf[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_si, l_si, theta(i)*180/pi, eps_si, 1, [])[0:2]
+    for i in range(len(theta)):
+        sigma_0_VV_si_surf[i], sigma_0_HH_si_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_si, l_si, theta[i]*180/pi, eps_si, 1, [])[0:2]
     
 
     # Calculate total co-polarized surface backscattering cofficients,

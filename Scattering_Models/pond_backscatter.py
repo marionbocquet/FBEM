@@ -37,7 +37,7 @@ def pond_backscatter(Lambda, T_fw, beta_c, u_a):
 
     ## Angular Sampling for Scattering Signature
 
-    theta = np.logspace(np.np.log10(1e-6), np.np.log10(pi/2), 200)
+    theta = np.logspace(np.log10(1e-6), np.log10(pi/2), 200)
 
     ## Antenna Parameters
 
@@ -91,8 +91,8 @@ def pond_backscatter(Lambda, T_fw, beta_c, u_a):
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_inc = np.zeros((len(theta)))
     sigma_0_VV_inc = np.zeros((len(theta)))
-    for i in range(1, len(theta)+1):
-        sigma_0_VV_inc[i-1], sigma_0_HH_inc[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_mp, l_mp, theta(i)*180/pi, eps_fw, 1, [])[0:2]
+    for i in range(0, len(theta)):
+        sigma_0_VV_inc[i], sigma_0_HH_inc[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_mp, l_mp, theta[i]*180/pi, eps_fw, 1, [])[0:2]
     
 
     # Calculate total co-polarized surface backscattering cofficients,
@@ -104,7 +104,9 @@ def pond_backscatter(Lambda, T_fw, beta_c, u_a):
     sigma_0_VV_mp_surf[np.isinf(sigma_0_VV_mp_surf)] = np.nan
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
-    sigma_0_mp_surf = CubicSpline(theta,(sigma_0_HH_mp_surf + sigma_0_VV_mp_surf)/2)
+    y_safe = np.nan_to_num((sigma_0_HH_mp_surf + sigma_0_VV_mp_surf)/2, nan=0.0, posinf=1e10, neginf=-1e10)
+
+    sigma_0_mp_surf = CubicSpline(theta, y_safe)
 
     warnings.filterwarnings('default') 
 

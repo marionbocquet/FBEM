@@ -45,9 +45,11 @@ def synthetic_topo_shell(op_mode, topo_type, pitch, roll, sigma_surf, l_surf, H_
         L = 12000 # across-track diameter of grid, m
         W = 1200 # along-track diameter of grid, m
     
-    x1d= np.arange(-W/2 + dx/2, W/2 - dx/2 + 1e-12, dx)
-    y1d = np.arange(-L/2 + dx/2, L/2 - dx/2 + 1e-12, dx)
-    x, y = np.meshgrid(x1d, y1d, indexing='xy')
+    Nx = int(round(W / dx))
+    Ny = int(round(L / dx))
+    xv = np.linspace(-W/2 + dx/2, W/2 - dx/2, Nx)
+    yv = np.linspace(-L/2 + dx/2, L/2 - dx/2, Ny)
+    x, y = np.meshgrid(xv, yv, indexing='xy')
 
     ## Generate topography
 
@@ -74,7 +76,7 @@ def synthetic_topo_shell(op_mode, topo_type, pitch, roll, sigma_surf, l_surf, H_
     ## Add melt ponds
 
     if f_p > 0:
-        z, surface_type = add_melt_ponds(z, surface_type,f_p) # topo still referenced to mean height
+        z, surface_type = add_melt_ponds(z, surface_type, f_p) # topo still referenced to mean height
 
     ## Finalize
 

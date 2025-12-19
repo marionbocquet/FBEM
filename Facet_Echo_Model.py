@@ -81,7 +81,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
     # delta_x_pl = 2*sqrt(c*(h/((Re+h)/Re))*(1/bandwidth)) # across-track pulse-limited footprint size, m
     # A_pl = pi*(delta_x_pl/2)**2 # area of each range ring (after waveform peak), m
 
-    epsilon_b = Lambda / (2 * N_b * v  (1/prf)) # angular resolution of beams from full look crescent (beam separation angle) 
+    epsilon_b = Lambda / (2 * N_b * v * (1/prf)) # angular resolution of beams from full look crescent (beam separation angle) 
 
     # Antenna look geometry
     m = np.arange(-(N_b - 1) / 2, (N_b - 1) / 2 + 1)
@@ -91,7 +91,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
     # Triangulate
     TRI = Delaunay(PosT[:, :2]).simplices
 
-    SURFACE_TYPE = surface_type(TRI[:, 0])
+    SURFACE_TYPE = surface_type[TRI[:, 0]]
 
     # Simplify triangulation to improve speed
     # simplication_factor = 0.8 # Fraction of facets remaining after simplification
@@ -212,13 +212,14 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         vu_t_surf = (10.0 ** (sigma_0_snow_surf(theta_pr) / 10.0)) * (h_s != 0)
 
         mask_vol = (T >= -(2.0 * h_s) / c_s) & (T < 0.0)
-        sigma_vol_lin = 10.0 ** (sigma_0_snow_vol(theta_PR[mask_vol]) / 10.0)
+        vu_t_vol = np.zeros_like(T, dtype=float)
+        if mask_vol.any():
+            sigma_vol_lin = 10.0 ** (sigma_0_snow_vol(theta_PR[mask_vol]) / 10.0)
         
-        # Extinction
-        atten = kappa_e * np.exp(-c_s * kappa_e * (T[mask_vol] + (2.0 * h_s) / c_s))
-        vu_t_vol = sigma_vol_lin * atten
-
-
+            # Extinction
+            atten = kappa_e * np.exp(-c_s * kappa_e * (T[mask_vol] + (2.0 * h_s) / c_s))
+            vu_t_vol_masked = sigma_vol_lin * atten
+            vu_t_vol[mask_vol] = vu_t_vol_masked
 
         # vu_t_surf_tracer : 
         P_t_shift = np.empty_like(P_t)
@@ -229,24 +230,29 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         vu_t_surf_tracer = P_t_shift * vu_t_surf[:, None]
 
         vu_t_vol_tracer = np.zeros_like(P_t)
-        vu_t_vol_tracer[mask_vol] = vu_t_vol
+        if mask_vol.any():
+            vu_t_vol_tracer[mask_vol] = vu_t_vol
         vu_t_vol_tracer *= P_t_shift
         
 
         # --- Ice surface echo from IEM ---        
         mu_t = np.zeros_like(theta_pr)  # (F,)        
-        idx_ice = (SURFACE_TYPE == 1)        
-        mu_t[idx_ice] = ((10.0 ** (sigma_0_ice_surf(theta_pr[idx_ice]) / 10.0)) * 
-                         (tau_snow(theta_pr[idx_ice]) ** 2) *   
-                         np.exp(-kappa_e * h_s / 2.0))   
+        idx_ice = (SURFACE_TYPE == 1)  
+        if idx_ice.any():      
+            mu_t[idx_ice] = ((10.0 ** (sigma_0_ice_surf(theta_pr[idx_ice]) / 10.0)) * 
+                            (tau_snow(theta_pr[idx_ice]) ** 2) *   
+                            np.exp(-kappa_e * h_s / 2.0))   
         mu_t_si_tracer = P_t * mu_t[:, None]        
         
         # --- Eau libre (leads / melt ponds) cohérente ---        
         
         idx_lead = (SURFACE_TYPE == 0)       
-        idx_mp = (SURFACE_TYPE == 2)        
-        mu_t[idx_lead] = 10.0 ** (sigma_0_lead_surf(theta_pr[idx_lead]) / 10.0)        
-        mu_t[idx_mp] = 10.0 ** (sigma_0_mp_surf(theta_pr[idx_mp]) / 10.0)        
+        idx_mp = (SURFACE_TYPE == 2)   
+        if idx_lead.any():     
+            mu_t[idx_lead] = 10.0 ** (sigma_0_lead_surf(theta_pr[idx_lead]) / 10.0)        
+        if idx_mp.any():
+            mu_t[idx_mp] = 10.0 ** (sigma_0_mp_surf(theta_pr[idx_mp]) / 10.0)        
+        
         mu_t = np.nan_to_num(mu_t, nan=0.0)        
         
         mu_t_ocean_tracer = P_t * mu_t[:, None] - mu_t_si_tracer        

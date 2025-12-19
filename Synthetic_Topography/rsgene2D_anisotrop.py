@@ -29,8 +29,8 @@ def rsgene2D_anisotrop( N , M, rL , rW, h , Lx , Ly , LN):
     """
     np.set_printoptions(precision=15, suppress=False)
 
-    x = np.linspace(-rL/2, rL/2, N) 
-    y = np.linspace(-rW/2, rW/2, M)
+    x = np.linspace(-rL/2, rL/2, int(N)) 
+    y = np.linspace(-rW/2, rW/2, int(M))
     X, Y = np.meshgrid(x, y)
 
     if LN == 0:
@@ -41,7 +41,7 @@ def rsgene2D_anisotrop( N , M, rL , rW, h , Lx , Ly , LN):
         mu_norm = log(1**2/sqrt(h**2 + 1**2))
         sigma_norm = sqrt(log(h**2/1**2 + 1))
 
-    Z = sigma_norm * np.random.randn(M,N) + mu_norm # uncorrelated Gaussian random rough surface distribution                         # with rms height h
+    Z = sigma_norm * np.random.randn(int(M), int(N)) + mu_norm # uncorrelated Gaussian random rough surface distribution                         # with rms height h
                                     
     dx = rL / (N-1)
 

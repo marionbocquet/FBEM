@@ -65,10 +65,13 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     ## Dielectric Properties
 
     # Dry snow dielectrics
+    print('---- Dry snow dielectrics ----')
     epsr_ds, epsi_ds = RelDielConst_DrySnow(T_s, rho_s*1e-3, f_c*1e-9)
     eps_ds = epsr_ds + 1j * epsi_ds
 
     # Fresnel reflection & transmission coefficients
+    print('---- Fresnel reflection & transmission coefficients ----')
+
     epsr_a = 1 # relative permittivity of air
 
     eta_0 = 376.73031346177 # intrinsic impedance of free space, ohms
@@ -90,6 +93,8 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
 
     ## Backscattering Coefficient of Air-Snow Interface, sigma0
+
+    print('---- Backscattering Coefficient of Air-Snow Interface, sigma0 ----')
 
     # Calculate coherent vs. incoherent surface scattering ratio
     # psi = k0*sigma_s*cos(theta) # frequency-dependent roughness parameter
@@ -133,6 +138,8 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     # n = sqrt(epsr_i/epsr_a)
     # rayleigh_approximation = abs(n*chi) # Rayleigh scattering appropriate if <0.5
 
+    print('---- Backscattering Coefficient of Snow Volume, sigma0 ----')
+
     # Mie extinction coefficient in dry snow
     kappa_e = MieExtinc_DrySnow(rho_s * 1e-3, r_s, f_c * 1e-9, T_s)[2]
 
@@ -147,8 +154,11 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     # L_theta2 = exp((-2*kappa_a2*h_s)./cos(theta_2)) # ignoring scattering, following Nanden et al 2017
 
     # Backscattered power from snow layer, following Winebrenner et al 1992
+    # TODO : exception if L_theta = 1 -> stupid log(0)...
     sigma_0_HH_s_vol = 10 * log10(tau_H**2 * (1 - L_theta))
     sigma_0_VV_s_vol = 10 * log10(tau_V**2 * (1 - L_theta))
+
+
 
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
