@@ -6,6 +6,7 @@ from Scattering_Models.RelDielConst_DrySnow import RelDielConst_DrySnow
 from Scattering_Models.I2EM_Backscatter_model import I2EM_Backscatter_model 
 from Scattering_Models.MieExtinc_DrySnow import MieExtinc_DrySnow
 from Scattering_Models.I2EM_Backscatter_model import py_length
+from tqdm import tqdm
 
 def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
@@ -112,8 +113,10 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     # Run single-scattering IEM for relevant range of facet incidence angles
     sigma_0_HH_s_surf = np.zeros((len(theta),1))
     sigma_0_VV_s_surf = np.zeros((len(theta),1))
-    for i in range(1,len(theta+1)):
-        sigma_0_VV_s_surf[i-1], sigma_0_HH_s_surf[i-1] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta[i-1]*180/pi, eps_ds, 1, [])[0:2]
+    print(f'{len(theta)} iterations')
+
+    for i in tqdm(range(len(theta))):
+        sigma_0_VV_s_surf[i], sigma_0_HH_s_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta[i]*180/pi, eps_ds, 1, [])[0:2]
     
 
     # Calculate total co-polarized surface backscattering cofficients,

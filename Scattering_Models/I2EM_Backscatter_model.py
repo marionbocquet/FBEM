@@ -252,7 +252,6 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
 
     Ivv = np.zeros((Ts, 1))
     Ihh = np.copy(Ivv)
-        
     for n in range(1, Ts+1):
         Ivv[n-1] = ((kz + ksz)**n * fvv * exp(-sig**2 * kz * ksz) + 
                     0.25 * (Fvvupi * (ksz - qi)**(n-1) * exp(-sig**2 * (qi**2 - qi * (ksz - kz))) 

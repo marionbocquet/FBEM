@@ -227,7 +227,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         # interpolation of facet per facet... (# TODO should find a better way ?)
         for f in range(P_t.shape[0]):
             P_t_shift[f, :] = np.interp(t, x_old, P_t[f, :], left=0.0, right=0.0)
-        vu_t_surf_tracer = P_t_shift * vu_t_surf[:, None]
+        vu_t_surf_tracer = P_t_shift * vu_t_surf
 
         vu_t_vol_tracer = np.zeros_like(P_t)
         if mask_vol.any():
@@ -242,7 +242,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
             mu_t[idx_ice] = ((10.0 ** (sigma_0_ice_surf(theta_pr[idx_ice]) / 10.0)) * 
                             (tau_snow(theta_pr[idx_ice]) ** 2) *   
                             np.exp(-kappa_e * h_s / 2.0))   
-        mu_t_si_tracer = P_t * mu_t[:, None]        
+        mu_t_si_tracer = P_t * mu_t      
         
         # --- Eau libre (leads / melt ponds) cohérente ---        
         
@@ -283,7 +283,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         P_t_full[ii, :] = np.real(echo_t)        
     
     P_t_ml = np.nansum(P_t_full, axis=0) 
-    P_t_full_comp = sigma_0_tracer * P_t_full[:, :, None]
+    P_t_full_comp = sigma_0_tracer * P_t_full #[:, :, None]
     P_t_full_T = P_t_full.T
     P_t_full_comp_perm = np.transpose(P_t_full_comp, (1, 0, 2))
 
