@@ -231,7 +231,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
 
         vu_t_vol_tracer = np.zeros_like(P_t)
         if mask_vol.any():
-            vu_t_vol_tracer[mask_vol] = vu_t_vol
+            vu_t_vol_tracer[mask_vol] = vu_t_vol[mask_vol]
         vu_t_vol_tracer *= P_t_shift
         
 
