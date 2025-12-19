@@ -187,12 +187,15 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
             P_m = D_0 * (num / den)
 
         elif beam_weighting == 2:
-            # Apply hamming window to azimuthal response function
-            n = np.arange(N_b)            
-            w = 0.54 - 0.46 * np.cos((2 * np.pi * n) / (N_b - 1))            
-            a = (2j * k0 * v / prf) * (theta_l + m[ii] * epsilon_b)[:, None] * (n - (N_b - 1) / 2)[None, :]            
+            if op_mode == 1:
+                w = np.arange(N_b) * 0 + 1
+            else :
+                # Apply hamming window to azimuthal response function
+                n = np.arange(N_b)            
+                w = 0.54 - 0.46 * np.cos((2 * np.pi * n) / (N_b - 1))            
+                a = (2j * k0 * v / prf) * (theta_l + m[ii] * epsilon_b)[:, None] * (n - (N_b - 1) / 2)[None, :]            
             P_m = np.abs(np.sum(w[None, :] * np.exp(a), axis=1)) ** 2
-            
+                
 
         ## Compute transmitted power envelope
         
