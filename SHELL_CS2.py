@@ -146,7 +146,7 @@ l_s = 0.04 # snow correlation length (default = 0.04 m)
 T_s = -20 # snow bulk temperature (default = -20 C)
 rho_s = 350 # snow bulk density (default = 350 kg/m**3)
 r_s = 0.001 # snow grain size (normal range from 0.0001 to 0.004 m, default 1 mm)
-h_s = 0 # snow depth, m
+h_s = 0.2 # snow depth, m
 
 sigma_si = 0.002 # sea ice rms height (default = 0.002 m)
 l_si = 0.02 # sea ice correlation length (default = 0.02 m)
@@ -163,8 +163,8 @@ Lambda = 0.0221 # radar wavelength (default = 0.0221, Ku-band e.g. Cryosat-2)
 
 GP = whos_py(globals())
 
-op_mode = 2 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
-beam_weighting = 2 # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
+op_mode = 1 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
+beam_weighting = 1 # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
 P_T = 2.188e-5 # transmitted peak power (default = 2.188e-5 watts)
 
 pitch = 0 # antenna bench pitch counterclockwise (up to ~0.01 rads)
@@ -193,14 +193,14 @@ N_tb = 70 # (default = 70)
 t_0 = 15 # (default = 15)
 
 # Time oversampling factor
-t_sub = 1
+t_sub = 2
 
 # Parameters of synthetic topography
 topo_type = 2 # type of surface: 1 = Gaussian, 2 = lognormal, 3 = fractal
-sigma_surf = 0.1 # large-scale rms roughness height (default = 0.1 m)
+sigma_surf = 0.2 # large-scale rms roughness height (default = 0.1 m)
 l_surf = 5 # large-scale correlation length (default = 5 m)
 H_surf = 0.5 # Hurst parameter (default = 0.5)
-dx = 10 # resolution of grid, m (WARNING use dx>=10 for PL mode and dx>=5 for SAR mode)
+dx = 30 # resolution of grid, m (WARNING use dx>=10 for PL mode and dx>=5 for SAR mode)
 
 # Lead parameters (optional)
 L_w = 0 # lead width (default = 100 m)
@@ -314,6 +314,9 @@ for i in range(len(vec1)):
                 ) = snow_backscatter(
                     Lambda, sigma_s, l_s, T_s, rho_s, r_s, h_s, beta_c
                 )
+
+                print("sigma_0_snow_surf =", sigma_0_snow_surf)
+                print("sigma_0_snow_vol =", sigma_0_snow_vol)
                 print('--- Ice Backscatter computation ---')
                 (
                     _,
@@ -342,9 +345,9 @@ for i in range(len(vec1)):
             # --- Initialisation ---
             itN = 1
 
-            P_t_full = np.zeros((N_b, len(t), itN))
+            P_t_full = np.zeros((len(t), N_b, itN))
             P_t_ml = np.zeros((len(t), itN))
-            P_t_full_comp = np.zeros((N_b, len(t), 4, itN))
+            P_t_full_comp = np.zeros((len(t), N_b, 4, itN))
             P_t_ml_comp = np.zeros((len(t), 4, itN))
 
             for l in range(itN):

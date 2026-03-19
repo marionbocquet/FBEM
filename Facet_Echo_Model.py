@@ -3,6 +3,7 @@ import numpy as np
 from numpy import sin, cos, tan, sqrt, exp, log10
 from scipy.spatial import Delaunay
 from Synthetic_Topography.computeNormalVectorTriangulation import computeNormalVectorTriangulation
+from scipy.interpolate import interp1d
 
 def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch, 
                      roll, prf, beam_weighting, G_0, D_0, gamma1, 
@@ -131,6 +132,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
     P_t_full = np.zeros((len(m), len(t)))
     sigma_0_tracer = np.zeros((len(m), len(t), 4))
     for ii in range(len(m)):
+        print('Beam number', ii+1 , 'of', len(m))
         # disp(ii)
         
         ## Angular geometry of surface
@@ -188,13 +190,14 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
 
         elif beam_weighting == 2:
             if op_mode == 1:
-                w = np.arange(N_b) * 0 + 1
+                #P_m = np.ones_like(N_b)
+                P_m = np.ones_like(len(A_facets))
             else :
                 # Apply hamming window to azimuthal response function
                 n = np.arange(N_b)            
                 w = 0.54 - 0.46 * np.cos((2 * np.pi * n) / (N_b - 1))            
                 a = (2j * k0 * v / prf) * (theta_l + m[ii] * epsilon_b)[:, None] * (n - (N_b - 1) / 2)[None, :]            
-            P_m = np.abs(np.sum(w[None, :] * np.exp(a), axis=1)) ** 2
+                P_m = np.abs(np.sum(w[None, :] * np.exp(a), axis=1)) ** 2
                 
 
         ## Compute transmitted power envelope
@@ -209,7 +212,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         ## Compute linearized backscattering
         # Surface plus volume echo (following Arthern et al 2001, Kurtz et al 2014 procedure)
         
-        theta_PR = theta_pr[:, None] + np.zeros_like(T)
+        theta_PR = theta_pr[:, None] * np.zeros_like(T)
         
         # Snow volume echo from IEM and Mie extinction
         vu_t_surf = (10.0 ** (sigma_0_snow_surf(theta_pr) / 10.0)) * (h_s != 0)
@@ -225,17 +228,15 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
             vu_t_vol[mask_vol] = vu_t_vol_masked
 
         # vu_t_surf_tracer : 
-        P_t_shift = np.empty_like(P_t)
         x_old = t - 2.0 * h_s / c_s
-        # interpolation of facet per facet... (# TODO should find a better way ?)
-        for f in range(P_t.shape[0]):
-            P_t_shift[f, :] = np.interp(t, x_old, P_t[f, :], left=0.0, right=0.0)
+        f_interp = interp1d(x_old, P_t, axis=1, kind="linear", bounds_error=False, fill_value=np.nan)
+        P_t_shift = f_interp(t)
         vu_t_surf_tracer = P_t_shift * vu_t_surf
 
         vu_t_vol_tracer = np.zeros_like(P_t)
         if mask_vol.any():
             vu_t_vol_tracer[mask_vol] = vu_t_vol[mask_vol]
-        vu_t_vol_tracer *= P_t_shift
+        vu_t_vol_tracer_p = P_t_shift * vu_t_vol_tracer
         
 
         # --- Ice surface echo from IEM ---        
@@ -246,7 +247,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
                             (tau_snow(theta_pr[idx_ice]) ** 2) *   
                             np.exp(-kappa_e * h_s / 2.0))   
         mu_t_si_tracer = P_t * mu_t[:, np.newaxis]
-        # --- Eau libre (leads / melt ponds) cohérente ---        
+        # --- Leads / melt ponds ---        
         
         idx_lead = (SURFACE_TYPE == 0)       
         idx_mp = (SURFACE_TYPE == 2)   
@@ -260,17 +261,24 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         mu_t_ocean_tracer = P_t * mu_t[:, None] - mu_t_si_tracer        
         
         # --- Total echo (pre-convolved with transmitted pulse) ---        
-        sigma_0_P_t = vu_t_surf_tracer + vu_t_vol_tracer + mu_t_si_tracer + mu_t_ocean_tracer  
+        sigma_0_P_t = vu_t_surf_tracer + vu_t_vol_tracer_p + mu_t_si_tracer + mu_t_ocean_tracer  
         
         # --- Backscatter component fraction tracer ---        
         total_t = np.sum(sigma_0_P_t, axis=0)  # (M,)        
         total_t_safe = np.where(total_t == 0, np.finfo(float).eps, total_t)        
-        f_surf = np.sum(vu_t_surf_tracer, axis=0) / total_t_safe        
-        f_vol  = np.sum(vu_t_vol_tracer,  axis=0) / total_t_safe        
-        f_ice  = np.sum(mu_t_si_tracer,   axis=0) / total_t_safe        
-        f_ocn  = np.sum(mu_t_ocean_tracer,axis=0) / total_t_safe        
+        f_surf = np.sum(vu_t_surf_tracer, axis=0) / total_t        
+        f_vol  = np.sum(vu_t_vol_tracer_p,  axis=0) / total_t        
+        f_ice  = np.sum(mu_t_si_tracer,   axis=0) / total_t        
+        f_ocn  = np.sum(mu_t_ocean_tracer,axis=0) / total_t        
         sigma_0_tracer[ii, :, :] = np.stack([f_surf, f_vol, f_ice, f_ocn], axis=1)  # (M x 4)        
         
+        vu_t_surf_tracer = np.array([])
+        vu_t_vol_tracer = np.array([])
+        vu_t_vol_tracer_p = np.array([])
+        mu_t = np.array([])
+        mu_t_si_tracer = np.array([])
+        mu_t_ocean_tracer = np.array([])
+
         # --- Integrate power contributions from each facet ---        
         # Integrate radar equation
         const = ((Lambda ** 2) * P_T) / ((4.0 * np.pi) ** 3) * (0.5 * c * h)        
@@ -291,4 +299,4 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
 
     P_t_ml_comp = np.nansum(P_t_full_comp_perm, axis=1)
 
-    return P_t_full, P_t_ml, P_t_full_comp, P_t_ml_comp
+    return P_t_full_T, P_t_ml, P_t_full_comp_perm, P_t_ml_comp

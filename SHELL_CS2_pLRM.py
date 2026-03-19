@@ -164,7 +164,7 @@ Lambda = 0.0221 # radar wavelength (default = 0.0221, Ku-band e.g. Cryosat-2)
 GP = whos_py(globals())
 
 op_mode = 1 #2 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
-beam_weighting = 2 # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
+beam_weighting = 1 #TODO # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
 P_T = 2.188e-5 # transmitted peak power (default = 2.188e-5 watts)
 
 pitch = 0 # antenna bench pitch counterclockwise (up to ~0.01 rads)
@@ -288,7 +288,7 @@ for i in range(len(vec1)):
     for j in range(len(vec2)):
         for k in range(len(vec3)):
 
-            # --- Affectation dynamique des paramètres (équivalent eval) ---
+            # --- dynamic affectation ---
             idx_map = [i, j, k]
             for l, p_idx in enumerate(idS):
                 globals()[PARAMETERS[p_idx]['name']] = [vec1, vec2, vec3][l][idx_map[l]]

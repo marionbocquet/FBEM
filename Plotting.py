@@ -55,7 +55,7 @@ def plotting(topo_plot, echo_plot,
         cbar.set_label('Z [m]')
 
         # Try to match MATLAB's view(-45, 80)
-        ax.view_init(elev=80, azim=-45)
+        ax.view_init(elev=80, azim=45)
 
         ax.set_xlim([-1000, 1000])
         ax.set_ylim([-1000, 1000])
@@ -67,7 +67,7 @@ def plotting(topo_plot, echo_plot,
 
         plt.tight_layout()
         #plt.pause(0.001)
-        plt.savefig('test_1.png')
+        plt.savefig('test_11.png')
     # ---------------------------
     # Echo plots
     # ---------------------------
@@ -90,7 +90,7 @@ def plotting(topo_plot, echo_plot,
         # MATLAB uses 1:4:N_b; Python 0-based so use indices: 0, 4, 8, ...
         idx = np.arange(0, N_b, 4)
         for i in idx:
-            ax2.plot(t_ns, P_t_full[i, :], linewidth=1, label=f'{i+1}')  # label with MATLAB-like 1-based index
+            ax2.plot(t_ns, P_t_full.T[i, :], linewidth=1, label=f'{i+1}')  # label with MATLAB-like 1-based index
         ax2.set_xlim([-20, 80])
         ax2.grid(True)
         ax2.set_title('Single-look power echoes')
@@ -137,4 +137,6 @@ def plotting(topo_plot, echo_plot,
 
         plt.tight_layout()
         #plt.pause(0.001)
-        plt.savefig('test_2.png')
+        plt.savefig('test_22.png')
+
+    plt.show()

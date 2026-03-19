@@ -16,7 +16,7 @@
 # pond_backscatter.m
 
 from Facet_Echo_Model import Facet_Echo_Model
-from Facet_Echo_Model_2D import Facet_Echo_Model_2D
+#from Facet_Echo_Model_2D import Facet_Echo_Model_2D
 
 
 from Scattering_Models.RelDielConst_Brine import RelDielConst_Brine
@@ -97,6 +97,25 @@ def load_workspace_pickle(filename='workspace.pkl'):
     with open(filename, 'rb') as f:
         data = pickle.load(f)
 
+def whos_py(namespace):
+    out = []
+    for name, val in namespace.items():
+        # Ignorer modules et fonctions
+        if isinstance(val, types.ModuleType) or callable(val):
+            continue
+        
+        # Déterminer le type et la "taille"
+        try:
+            size = val.shape  # pour les arrays
+        except AttributeError:
+            size = (1, 1)     # pour scalaires ou autres types
+        
+        out.append({
+            'name': name,
+            'size': size,
+            'type': type(val)  # <- on garde le type pour filtrage
+        })
+    return out
 
 ## Model Variables (MODIFIABLE)
 
@@ -127,28 +146,7 @@ S_sw = 34 # salinity of seawater (default = 34 ppt)
 # Antenna parameters
 Lambda = 0.00838580302 # radar wavelength (Ka-band AltiKa SARAL)
 
-namespace = globals()
-GP = [] # all parameters controlling scattering signatures
-for name, obj in namespace.items():
-    if name.startswith('__') and name.endswith('__'):        
-        continue 
-    size_info = ''    
-    if isinstance(obj, np.ndarray):
-        size_info = f"shape={obj.shape}, dtype={obj.dtype}"
-        bytes_ = obj.nbytes
-    else:        
-        try:            
-            size_info = f"len={len(obj)}"
-        except Exception:            
-            size_info = ''        
-        bytes_ = sys.getsizeof(obj)    
-    GP.append({        
-        'name': name,        
-        'type': type(obj).__name__,        
-        'size_info': size_info,        
-        'bytes': bytes_    
-    })
-        
+GP = whos_py(globals())
 
 op_mode = 1 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
 beam_weighting = 1 # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
@@ -245,7 +243,7 @@ for i in range(len(sigma_si)):
         current = len(sigma_surf) * i + (j + 1)
         print(f"Simulation {current}/{total}")
 
-        P_t_full, P_t_ml, em_bias = Facet_Echo_Model_2D(op_mode,Lambda,bandwidth,P_T,h,v,pitch,roll,prf,beam_weighting,G_0,D_0,gamma1,gamma2,N_b,t,sigma_0_snow_surf,sigma_0_snow_vol,kappa_e,tau_snow,c_s,h_s,sigma_0_ice_surf,sigma_surf(j),l_surf,H_surf,topo_type,dx)
+        P_t_full, P_t_ml, em_bias = Facet_Echo_Model(op_mode,Lambda,bandwidth,P_T,h,v,pitch,roll,prf,beam_weighting,G_0,D_0,gamma1,gamma2,N_b,t,sigma_0_snow_surf,sigma_0_snow_vol,kappa_e,tau_snow,c_s,h_s,sigma_0_ice_surf,sigma_surf[j],l_surf,H_surf,topo_type,dx)
         
         P_t_full_range[i][j]= P_t_full
         P_t_ml_range[i][j] = P_t_ml
