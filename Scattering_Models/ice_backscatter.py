@@ -145,8 +145,8 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     sigma_0_HH_si_surf = np.zeros(len(theta))
     sigma_0_VV_si_surf = np.zeros(len(theta))
     sigma_0_HV_si_surf = np.zeros(len(theta))
-
     """
+
     for i in tqdm(range(len(theta))):
         sigma_0_VV_si_surf[i], sigma_0_HH_si_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_si, l_si, theta[i]*180/pi, eps_si, 1, [])[0:2]
     
