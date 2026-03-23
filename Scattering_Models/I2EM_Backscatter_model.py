@@ -119,8 +119,8 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
     Book reference: Section 10-3.9
     """
     error = 1.0e8
-    sig = np.copy(sig) / 100
-    L = np.copy(L) / 100
+    sig = np.copy(sig) * 100
+    L = np.copy(L) * 100
     mu_r = 1.0 # Relativ permeability
 
     k = 2 * pi * fr / 30 # wavenumber in free space. Speed of light is in cm/s
@@ -206,7 +206,7 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
                        lambda x: -xxx, 
                        lambda x: xxx,    
                        args=(cs, s, er, s2, sigx, sigy))
-    """
+    
     
     Rav, err = dblquad(Rav_integration_wrapped, 
                        -xxx, xxx, # bound for Zx
@@ -219,6 +219,50 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
                        lambda x: -xxx,  # lower bound for Zy
                        lambda x: xxx,   # upper bound for Zy
                        args=(cs, s, er, s2, sigx, sigy))
+    """
+    def Rav_real(Zy, Zx, cs, s, er, s2, sigx, sigy):
+        return np.real(Rav_integration(Zx, Zy, cs, s, er, s2, sigx, sigy))
+
+    def Rav_imag(Zy, Zx, cs, s, er, s2, sigx, sigy):
+        return np.imag(Rav_integration(Zx, Zy, cs, s, er, s2, sigx, sigy))
+    def Rah_real(Zy, Zx, cs, s, er, s2, sigx, sigy):
+        return np.real(Rah_integration(Zx, Zy, cs, s, er, s2, sigx, sigy))
+
+    def Rah_imag(Zy, Zx, cs, s, er, s2, sigx, sigy):
+        return np.imag(Rah_integration(Zx, Zy, cs, s, er, s2, sigx, sigy))
+
+    Rav_r, _ = dblquad(
+        Rav_real,
+        -xxx, xxx,
+        lambda x: -xxx,
+        lambda x: xxx,
+        args=(cs, s, er, s2, sigx, sigy)
+    )
+
+    Rav_i, _ = dblquad(
+        Rav_imag,
+        -xxx, xxx,
+        lambda x: -xxx,
+        lambda x: xxx,
+        args=(cs, s, er, s2, sigx, sigy)
+    )
+    Rah_r, _ = dblquad(
+        Rah_real,
+        -xxx, xxx,
+        lambda x: -xxx,
+        lambda x: xxx,
+        args=(cs, s, er, s2, sigx, sigy)
+    )
+
+    Rah_i, _ = dblquad(
+        Rah_imag,
+        -xxx, xxx,
+        lambda x: -xxx,
+        lambda x: xxx,
+        args=(cs, s, er, s2, sigx, sigy)
+    )
+    Rav = Rav_r + 1j * Rav_i
+    Rah = Rah_r + 1j * Rah_i
 
     Rav = np.copy(Rav) /(2*pi * sigx * sigy)
     Rah = np.copy(Rah) /(2*pi * sigx * sigy)
@@ -250,7 +294,7 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
 
     #----- calculating  Ivv and Ihh ----
 
-    Ivv = np.zeros((Ts, 1))
+    Ivv = np.zeros((Ts, 1), dtype=complex)
     Ihh = np.copy(Ivv)
     for n in range(1, Ts+1):
         Ivv[n-1] = ((kz + ksz)**n * fvv * exp(-sig**2 * kz * ksz) + 

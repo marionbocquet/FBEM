@@ -45,7 +45,7 @@ def plotting(topo_plot, echo_plot,
     # Topography plot (3D trisurf)
     # ---------------------------
     if topo_plot > 0:
-        fig = plt.figure(num=1); plt.clf()
+        fig = plt.figure(num=1, figsize=(10,8)); plt.clf()
         ax = fig.add_subplot(111, projection='3d')
 
         # Delaunay triangulation in 2D (x,y); trisurf with z
@@ -72,7 +72,7 @@ def plotting(topo_plot, echo_plot,
     # Echo plots
     # ---------------------------
     if echo_plot > 0:
-        fig = plt.figure(num=2); plt.clf()
+        plt.clf();fig = plt.figure(num=2, figsize=(20,15)); 
 
         # 1) Multi-looked power echo (normalized)
         ax1 = fig.add_subplot(2, 2, 1)
@@ -137,6 +137,6 @@ def plotting(topo_plot, echo_plot,
 
         plt.tight_layout()
         #plt.pause(0.001)
-        plt.savefig('test_22.png')
+        plt.savefig('test_222.png')
 
     plt.show()

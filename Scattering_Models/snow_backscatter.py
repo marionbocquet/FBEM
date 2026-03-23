@@ -60,7 +60,7 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
      (C) Jack Landy, University of Bristol, 2018
 
     """
-
+    print(beta_c)
     ## Angular Sampling for Scattering Signature
 
     theta = np.logspace(log10(1e-6),log10(pi/2),200)
@@ -103,9 +103,10 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     tau_V = (1 + rho_V)*(cos(theta)/cos(theta_2)) # transmission coeff, V-pol
     tau_snow = CubicSpline(theta, (tau_H + tau_V)/2)
 
-    gamma_H = rho_H**2 # reflectivity (intensity)
-    gamma_V = rho_V**2 # reflectivity (intensity)
-
+    #gamma_H = rho_H**2 # reflectivity (intensity)
+    #gamma_V = rho_V**2 # reflectivity (intensity)
+    gamma_H = np.abs(rho_H)**2
+    gamma_V = np.abs(rho_V)**2
 
     ## Backscattering Coefficient of Air-Snow Interface, sigma0
 
@@ -146,12 +147,13 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     """
     
     
+    
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power
 
     # TODO In previous version !!! -> Check what it involves no to have it ...
-    sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf.T/10)) # H-pol, dB
-    sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf.T/10)) # V-pol, dB
+    #sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf/10)) # H-pol, dB
+    #sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf/10)) # V-pol, dB
 
     # Assuming no coherent reflected power
     sigma_0_HH_s_surf[np.isinf(sigma_0_HH_s_surf)] = np.nan
@@ -159,7 +161,7 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
-    sigma_0_snow_surf = CubicSpline(theta, ((sigma_0_HH_s_surf + sigma_0_VV_s_surf)/2).flatten())
+    sigma_0_snow_surf = CubicSpline(theta, ((sigma_0_HH_s_surf + sigma_0_VV_s_surf)/2))
 
 
     ## Backscattering Coefficient of Snow Volume, sigma0

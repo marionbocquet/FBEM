@@ -123,9 +123,10 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
     tau_V = (1 + rho_V)*(cos(theta)/cos(theta_2)) # transmission coeff
     tau_ice = CubicSpline(theta,(tau_H + tau_V)/2)
 
-    gamma_H = rho_H**2 # reflectivity (intensity)
-    gamma_V = rho_V**2 # reflectivity (intensity)
-
+    #gamma_H = rho_H**2 # reflectivity (intensity)
+    #gamma_V = rho_V**2 # reflectivity (intensity)
+    gamma_H = np.abs(rho_H)**2
+    gamma_V = np.abs(rho_V)**2
     print('---- Backscattering Coefficient of Snow-Ice Interface, sigma0 ----')
 
     ## Backscattering Coefficient of Snow-Ice Interface, sigma0
@@ -166,8 +167,8 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
 
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power
-    sigma_0_HH_si_surf = 10 * log10(sigma_0_HH_coh + 10**(sigma_0_HH_si_surf.T/10)) # H-pol, dB
-    sigma_0_VV_si_surf = 10 * log10(sigma_0_VV_coh + 10**(sigma_0_VV_si_surf.T/10)) # V-pol, dB
+    #sigma_0_HH_si_surf = 10 * log10(sigma_0_HH_coh + 10**(sigma_0_HH_si_surf.T/10)) # H-pol, dB
+    #sigma_0_VV_si_surf = 10 * log10(sigma_0_VV_coh + 10**(sigma_0_VV_si_surf.T/10)) # V-pol, dB
 
     # Assuming no coherent reflected power
     sigma_0_HH_si_surf[np.isinf(sigma_0_HH_si_surf)] = np.nan
