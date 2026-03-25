@@ -231,7 +231,7 @@ def Facet_Echo_Model(op_mode, Lambda, bandwidth, P_T, h, v, pitch,
         x_old = t - 2.0 * h_s / c_s
         f_interp = interp1d(x_old, P_t, axis=1, kind="linear", bounds_error=False, fill_value=np.nan)
         P_t_shift = f_interp(t)
-        vu_t_surf_tracer = P_t_shift * vu_t_surf #[:, None]
+        vu_t_surf_tracer = P_t_shift * vu_t_surf[:, None]
 
         vu_t_vol_tracer = np.zeros_like(P_t)
         if mask_vol.any():

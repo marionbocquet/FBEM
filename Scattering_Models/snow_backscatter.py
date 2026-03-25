@@ -145,15 +145,18 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
     for i in tqdm(range(len(theta))):
         sigma_0_VV_s_surf[i], sigma_0_HH_s_surf[i] = I2EM_Backscatter_model(f_c*1e-9, sigma_s, l_s, theta[i]*180/pi, eps_ds, 1, [])[0:2] 
     """
-    
-    
+
+    import matplotlib.pyplot as plt
+    plt.figure('1')
+    plt.plot(theta, sigma_0_VV_s_surf)
+    plt.savefig('sigma_0_VV_s_surf.png')
     
     # Calculate total co-polarized surface backscattering cofficients,
     # including coherent reflected power
 
     # TODO In previous version !!! -> Check what it involves no to have it ...
-    #sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf/10)) # H-pol, dB
-    #sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf/10)) # V-pol, dB
+    #sigma_0_HH_s_surf = 10*log10(sigma_0_HH_coh + 10**(sigma_0_HH_s_surf.T/10)) # H-pol, dB
+    #sigma_0_VV_s_surf = 10*log10(sigma_0_VV_coh + 10**(sigma_0_VV_s_surf.T/10)) # V-pol, dB
 
     # Assuming no coherent reflected power
     sigma_0_HH_s_surf[np.isinf(sigma_0_HH_s_surf)] = np.nan
@@ -161,7 +164,7 @@ def snow_backscatter(Lambda,sigma_s, l_s, T_s, rho_s, r_s, h_s,beta_c):
 
     # Build spline interpolants (assumption that scattering is polarization-independent)
     # dB
-    sigma_0_snow_surf = CubicSpline(theta, ((sigma_0_HH_s_surf + sigma_0_VV_s_surf)/2))
+    sigma_0_snow_surf = CubicSpline(theta, ((sigma_0_HH_s_surf + sigma_0_VV_s_surf).ravel()/2))
 
 
     ## Backscattering Coefficient of Snow Volume, sigma0

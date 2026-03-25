@@ -146,7 +146,7 @@ l_s = 0.04 # snow correlation length (default = 0.04 m)
 T_s = -20 # snow bulk temperature (default = -20 C)
 rho_s = 350 # snow bulk density (default = 350 kg/m**3)
 r_s = 0.001 # snow grain size (normal range from 0.0001 to 0.004 m, default 1 mm)
-h_s = 0.2 # snow depth, m
+h_s = 0.20 # snow depth, m
 
 sigma_si = 0.002 # sea ice rms height (default = 0.002 m)
 l_si = 0.02 # sea ice correlation length (default = 0.02 m)
@@ -163,7 +163,7 @@ Lambda = 0.0221 # radar wavelength (default = 0.0221, Ku-band e.g. Cryosat-2)
 
 GP = whos_py(globals())
 
-op_mode = 2 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
+op_mode = 1 # operational mode: 1 = pulse-limited, 2 = SAR (PL-mode only feasible on high memory machines)
 beam_weighting = 2 # weighting on the beam-wise azimuth FFT: 1 = rectangular, 2 = Hamming (default = Hamming)
 P_T = 2.188e-5 # transmitted peak power (default = 2.188e-5 watts)
 
@@ -197,7 +197,7 @@ t_sub = 1
 
 # Parameters of synthetic topography
 topo_type = 2 # type of surface: 1 = Gaussian, 2 = lognormal, 3 = fractal
-sigma_surf = 0.01 # large-scale rms roughness height (default = 0.1 m)
+sigma_surf = 0.1 # large-scale rms roughness height (default = 0.1 m)
 l_surf = 5 # large-scale correlation length (default = 5 m)
 H_surf = 0.5 # Hurst parameter (default = 0.5)
 dx = 10 # resolution of grid, m (WARNING use dx>=10 for PL mode and dx>=5 for SAR mode)

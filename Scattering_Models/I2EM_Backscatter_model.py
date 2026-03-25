@@ -186,7 +186,7 @@ def I2EM_Bistat_model(fr, sig, L, thi, phs, ths, er, sp, xx):
     for n in range(1, Ts+1):
         a0 = (ks * cs)**(2 * n) / factorial(n)
         a1 = a1 + a0 * wn[n-1]
-        b1 = b1 + a0 * (abs(Ft/2 + 2**(n+1) * Rh0/cs * exp(-(ks*cs)**2)))**2 * wn[n-1]
+        b1 = b1 + a0 * (abs(Ft/2 + 2**(n+1) * Rv0/cs * exp(-(ks*cs)**2)))**2 * wn[n-1]
 
     St = 0.25 * abs(Ft)**2 * a1 / b1
     St0 = 1 / (abs(1 + 8 * Rv0/(cs * Ft)))**2

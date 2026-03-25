@@ -121,6 +121,9 @@ def ice_backscatter(Lambda, sigma_si, l_si, T_si, S_si, h_s, beta_c, epsr_ds):
 
     tau_H = 1 + rho_H # transmission coeff
     tau_V = (1 + rho_V)*(cos(theta)/cos(theta_2)) # transmission coeff
+    import matplotlib.pyplot as plt
+    plt.plot(theta)
+    plt.savefig('theta.png')
     tau_ice = CubicSpline(theta,(tau_H + tau_V)/2)
 
     #gamma_H = rho_H**2 # reflectivity (intensity)

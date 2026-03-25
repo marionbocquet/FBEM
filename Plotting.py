@@ -49,6 +49,7 @@ def plotting(topo_plot, echo_plot,
         ax = fig.add_subplot(111, projection='3d')
 
         # Delaunay triangulation in 2D (x,y); trisurf with z
+        np.savetxt("PosT.csv", PosT, delimiter=",")
         tri = mtri.Triangulation(PosT[:, 0], PosT[:, 1])
         surf = ax.plot_trisurf(tri, PosT[:, 2], linewidth=0.0, antialiased=True, cmap='viridis')
         cbar = plt.colorbar(surf, ax=ax, orientation='horizontal', pad=0.15)
@@ -72,7 +73,7 @@ def plotting(topo_plot, echo_plot,
     # Echo plots
     # ---------------------------
     if echo_plot > 0:
-        plt.clf();fig = plt.figure(num=2, figsize=(20,15)); 
+        plt.clf();fig = plt.figure(num=2, figsize=(10,7)); 
 
         # 1) Multi-looked power echo (normalized)
         ax1 = fig.add_subplot(2, 2, 1)
@@ -121,15 +122,26 @@ def plotting(topo_plot, echo_plot,
 
         # 4) Multi-looked component echoes
         ax4 = fig.add_subplot(2, 2, 4)
-        ax4.plot(t_ns, P_t_ml_comp, linewidth=1)
+
+        # Legend with components names (assume 4 if provided)
+        comp_names = ['Snow Surf', 'Snow Vol', 'Ice Surf', 'Lead/Pond Surf']
+        comp_colors = [
+            (0.0000, 0.4470, 0.7410),
+            (0.8500, 0.3250, 0.0980),
+            (0.9290, 0.6940, 0.1250),
+            (0.4940, 0.1840, 0.5560)
+            ]
+        k = P_t_ml_comp.shape[1] if P_t_ml_comp.ndim == 2 else 1
+        for i in range(k):
+            ax4.plot(t_ns, P_t_ml_comp[:, i],
+                    linewidth=1,
+                    color=comp_colors[i])        
         ax4.set_xlim([-20, 80])
         ax4.grid(True)
         ax4.set_title('Multi-looked component echoes')
         ax4.set_xlabel('Time [ns]')
         ax4.set_ylabel('Power [W]')
 
-        # Legend with components names (assume 4 if provided)
-        comp_names = ['Snow Surf', 'Snow Vol', 'Ice Surf', 'Lead/Pond Surf']
         # Use only as many labels as available in columns
         k = P_t_ml_comp.shape[1] if P_t_ml_comp.ndim == 2 else 1
         labels = comp_names[:k] if k <= len(comp_names) else [f'Comp {i+1}' for i in range(k)]
@@ -139,4 +151,4 @@ def plotting(topo_plot, echo_plot,
         #plt.pause(0.001)
         plt.savefig('test_222.png')
 
-    plt.show()
+    #plt.show()
