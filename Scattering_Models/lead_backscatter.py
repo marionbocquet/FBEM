@@ -62,9 +62,10 @@ def lead_backscatter(Lambda, sigma_sw, T_sw, S_sw, beta_c):
     # tau_H = 1 + rho_H # transmission coeff
     # tau_V = (1 + rho_V)*(cos(theta)/cos(theta_2)) # transmission coeff
 
-    gamma_H = rho_H**2 # reflectivity (intensity)
-    gamma_V = rho_V**2 # reflectivity (intensity)
-
+    #gamma_H = rho_H**2 # reflectivity (intensity)
+    #gamma_V = rho_V**2 # reflectivity (intensity)
+    gamma_H = np.abs(rho_H)**2
+    gamma_V = np.abs(rho_V)**2
 
     ## Backscattering Coefficient of Snow-Ice Interface, sigma0
 
